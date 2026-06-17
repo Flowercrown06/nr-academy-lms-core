@@ -1,5 +1,6 @@
 HELP.md
-.gradle
+.gradle/
+.idea/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -18,6 +19,8 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
+.env
+backend/.env
 .idea
 *.iws
 *.iml
@@ -35,3 +38,4 @@ out/
 
 ### VS Code ###
 .vscode/
+/.API.md/
