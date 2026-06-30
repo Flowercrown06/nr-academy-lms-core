@@ -1,6 +1,0 @@
-
-
-@RestController
-public class ExampleController {
-
-}
