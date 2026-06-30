@@ -44,6 +44,9 @@ public class User {
     @Column(nullable = false, unique = true)
     String email;
 
+    @Column(nullable = false, unique = true)
+    String phone;
+
     @Builder.Default
     boolean isActive = true;
 

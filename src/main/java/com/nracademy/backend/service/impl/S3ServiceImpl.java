@@ -7,6 +7,7 @@ import com.nracademy.backend.exception.StorageDeleteFailedException;
 import com.nracademy.backend.exception.StorageUploadFailedException;
 import com.nracademy.backend.exception.UnsupportedMediaTypeException;
 import com.nracademy.backend.exception.ValidationFailedException;
+import com.nracademy.backend.service.S3Service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class S3ServiceImpl {
+public class S3ServiceImpl implements S3Service{
 
     final S3Client s3Client;
 
