@@ -48,6 +48,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return UserDetailsImpl.builder()
                 .baseAuthorities(grantedAuthorities)
                 .email(user.getEmail())
+                .password(user.getPassword())
                 .enabled(user.isActive())
                 .build();
     }

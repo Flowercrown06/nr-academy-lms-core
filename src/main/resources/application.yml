@@ -5,7 +5,11 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:servicedb}
     username: ${DB_USERNAME:postgres}
+<<<<<<< Updated upstream
     password: ${DB_PASSWORD:test}
+=======
+    password: ${DB_PASSWORD:5454}
+>>>>>>> Stashed changes
     driver-class-name: org.postgresql.Driver
 
   liquibase:
@@ -55,7 +59,13 @@ file:
 logging:
   level:
     com.zaxxer.hikari.pool.HikariPool: ERROR
-    
+
+#    logging:
+#      level:
+#        org:
+#          springframework:
+#            security=TRACE:
+
 threshold:
   minutes: ${THRESHOLD_MINUTES:3}
 

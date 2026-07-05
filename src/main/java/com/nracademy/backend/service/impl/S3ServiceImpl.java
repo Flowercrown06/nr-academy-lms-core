@@ -28,7 +28,11 @@ import static lombok.AccessLevel.PRIVATE;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE)
+<<<<<<< Updated upstream
 public class S3ServiceImpl implements S3Service{
+=======
+public class S3ServiceImpl implements S3Service {
+>>>>>>> Stashed changes
 
     final S3Client s3Client;
 
