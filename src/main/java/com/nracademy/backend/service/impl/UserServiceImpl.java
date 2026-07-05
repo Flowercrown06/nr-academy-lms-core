@@ -1,6 +1,5 @@
 package com.nracademy.backend.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -8,13 +7,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.nracademy.backend.dto.request.RegisterRequest;
-import com.nracademy.backend.dto.request.UpdateUserMeRequest;
 import com.nracademy.backend.dto.response.*;
 import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.entity.user.Role;
+import com.nracademy.backend.exception.common.EmailAlreadyRegisteredException;
+import com.nracademy.backend.exception.common.UnauthenticatedException;
+import com.nracademy.backend.exception.common.UserEmailNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,13 +28,8 @@ import com.nracademy.backend.entity.enums.StatusCode;
 import com.nracademy.backend.repository.UserRepository;
 import com.nracademy.backend.service.UserService;
 import com.nracademy.backend.service.S3Service;
-import com.nracademy.backend.service.RoleService;
 
 import lombok.RequiredArgsConstructor;
-
-import com.nracademy.backend.exception.*;
-
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor

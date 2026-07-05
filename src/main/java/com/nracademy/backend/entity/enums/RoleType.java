@@ -2,5 +2,8 @@ package com.nracademy.backend.entity.enums;
 
 public enum RoleType {
     USER,
-    ADMIN,
+    SUPER_ADMIN,
+    COURSE_OWNER,
+    TEACHER,
+    STUDENT
 }

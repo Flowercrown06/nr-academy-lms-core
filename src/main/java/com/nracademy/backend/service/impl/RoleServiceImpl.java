@@ -5,8 +5,8 @@ import com.nracademy.backend.entity.user.Role;
 import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.entity.enums.RoleType;
 import com.nracademy.backend.entity.enums.StatusCode;
-import com.nracademy.backend.exception.RoleNotFoundException;
-import com.nracademy.backend.exception.UserEmailNotFoundException;
+import com.nracademy.backend.exception.common.RoleNotFoundException;
+import com.nracademy.backend.exception.common.UserEmailNotFoundException;
 import com.nracademy.backend.repository.RoleRepository;
 import com.nracademy.backend.repository.UserRepository;
 

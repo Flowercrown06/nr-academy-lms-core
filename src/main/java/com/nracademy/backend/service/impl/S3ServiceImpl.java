@@ -2,11 +2,11 @@ package com.nracademy.backend.service.impl;
 
 import com.nracademy.backend.dto.response.UploadResponse;
 import com.nracademy.backend.entity.enums.StatusCode;
-import com.nracademy.backend.exception.MissingRequiredFieldException;
-import com.nracademy.backend.exception.StorageDeleteFailedException;
-import com.nracademy.backend.exception.StorageUploadFailedException;
-import com.nracademy.backend.exception.UnsupportedMediaTypeException;
-import com.nracademy.backend.exception.ValidationFailedException;
+import com.nracademy.backend.exception.common.MissingRequiredFieldException;
+import com.nracademy.backend.exception.common.StorageDeleteFailedException;
+import com.nracademy.backend.exception.common.StorageUploadFailedException;
+import com.nracademy.backend.exception.common.UnsupportedMediaTypeException;
+import com.nracademy.backend.exception.common.ValidationFailedException;
 import com.nracademy.backend.service.S3Service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

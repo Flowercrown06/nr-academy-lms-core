@@ -10,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.nracademy.backend.exception.UserEmailNotFoundException;
+import com.nracademy.backend.exception.common.UserEmailNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 

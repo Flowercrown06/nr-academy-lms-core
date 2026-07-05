@@ -1,5 +1,5 @@
 
-package com.nracademy.backend.exception;
+package com.nracademy.backend.exception.common;
 
 import com.nracademy.backend.entity.enums.StatusCode;
 import org.springframework.http.HttpStatus;

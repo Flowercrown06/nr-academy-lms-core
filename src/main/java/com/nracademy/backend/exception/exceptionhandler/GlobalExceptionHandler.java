@@ -14,7 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import com.nracademy.backend.dto.error.ErrorDTO;
 import com.nracademy.backend.dto.response.ErrorResponse;
 import com.nracademy.backend.entity.enums.StatusCode;
-import com.nracademy.backend.exception.AppException;
+import com.nracademy.backend.exception.common.AppException;
 
 import jakarta.validation.ConstraintViolationException;
 
