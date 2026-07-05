@@ -47,12 +47,9 @@ public class User {
     @Column(nullable = false, unique = true)
     String phone;
 
-<<<<<<< Updated upstream
-=======
     @Column(nullable = false)
     String password;
 
->>>>>>> Stashed changes
     @Builder.Default
     boolean isActive = true;
 
