@@ -1,0 +1,84 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-media-assets
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: media_assets
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+              - column:
+                  name: original_filename
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: storage_key
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: varchar(2048)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: size_bytes
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_type
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_id
+                  type: uuid
+              - column:
+                  name: uploaded_by
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: media_assets
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_media_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: media_assets
+            baseColumnNames: uploaded_by
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_media_uploaded_by
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_media_course_owner
+            tableName: media_assets
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: owner_type
+              - column:
+                  name: owner_id

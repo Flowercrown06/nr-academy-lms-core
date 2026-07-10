@@ -1,0 +1,192 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-assignments
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: assignments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: teacher_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: due_at
+                  type: timestamp
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: assignments
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_assignments_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: assignments
+            baseColumnNames: group_id
+            referencedTableName: groups
+            referencedColumnNames: id
+            constraintName: fk_assignments_group
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: assignments
+            baseColumnNames: teacher_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_assignments_teacher
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_assignments_course_group_status
+            tableName: assignments
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: group_id
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 005-create-assignment-submissions
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: assignment_submissions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assignment_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: submission_type
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_url
+                  type: varchar(1024)
+              - column:
+                  name: file_key
+                  type: varchar(512)
+              - column:
+                  name: text_answer
+                  type: text
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: grade
+                  type: numeric(5, 2)
+              - column:
+                  name: teacher_comment
+                  type: text
+              - column:
+                  name: reviewed_by
+                  type: uuid
+              - column:
+                  name: submitted_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reviewed_at
+                  type: timestamptz
+        - addForeignKeyConstraint:
+            baseTableName: assignment_submissions
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_submissions_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: assignment_submissions
+            baseColumnNames: assignment_id
+            referencedTableName: assignments
+            referencedColumnNames: id
+            constraintName: fk_submissions_assignment
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: assignment_submissions
+            baseColumnNames: student_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_submissions_student
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_submissions_course_assignment_student
+            tableName: assignment_submissions
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: assignment_id
+              - column:
+                  name: student_id
+        - createIndex:
+            indexName: idx_submissions_course_student_status
+            tableName: assignment_submissions
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: student_id
+              - column:
+                  name: status

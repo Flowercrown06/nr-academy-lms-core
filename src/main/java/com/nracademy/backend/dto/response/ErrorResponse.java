@@ -12,6 +12,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ErrorResponse {
     @Builder.Default
-    boolean success = false;
+    Boolean success = false;
     ErrorDTO error;
 }

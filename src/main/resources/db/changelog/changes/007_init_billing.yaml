@@ -1,0 +1,75 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-monthly-course-billing
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: monthly_course_billing
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: billing_year
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: billing_month
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active_student_count
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payment_per_student
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: commission_rate
+                  type: numeric(5, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: gross_base_amount
+                  type: numeric(14, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount_due
+                  type: numeric(14, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: generated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: monthly_course_billing
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_billing_course
+            onDelete: RESTRICT
+        - addUniqueConstraint:
+            tableName: monthly_course_billing
+            columnNames: course_id, billing_year, billing_month
+            constraintName: uk_billing_course_year_month

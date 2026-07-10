@@ -1,20 +1,35 @@
 package com.nracademy.backend.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import com.nracademy.backend.common.api.PageResponse;
+import com.nracademy.backend.dto.error.ErrorDetailDTO;
+import com.nracademy.backend.dto.request.CreateUserRequest;
 import com.nracademy.backend.dto.request.RegisterRequest;
-import com.nracademy.backend.dto.response.*;
+import com.nracademy.backend.dto.request.UpdateUserRequest;
+import com.nracademy.backend.dto.request.UserStatusUpdateRequest;
+import com.nracademy.backend.dto.response.UserDto;
+import com.nracademy.backend.dto.response.UserMeResponse;
+import com.nracademy.backend.entity.enums.Role;
+import com.nracademy.backend.entity.enums.StatusCode;
+import com.nracademy.backend.entity.enums.UserStatus;
 import com.nracademy.backend.entity.user.User;
-import com.nracademy.backend.entity.user.Role;
 import com.nracademy.backend.exception.common.EmailAlreadyRegisteredException;
+import com.nracademy.backend.exception.common.InvalidRoleException;
+import com.nracademy.backend.exception.common.SearchQueryTooShortException;
 import com.nracademy.backend.exception.common.UnauthenticatedException;
 import com.nracademy.backend.exception.common.UserEmailNotFoundException;
+import com.nracademy.backend.exception.common.UserNotFoundException;
+import com.nracademy.backend.mapper.UserMapper;
+import com.nracademy.backend.repository.UserRepository;
+import com.nracademy.backend.service.UserService;
+import com.nracademy.backend.specification.UserSpecifications;
+import com.nracademy.backend.tenant.TenantGuard;
+import com.nracademy.backend.util.PageRequestUtil;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,14 +37,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nracademy.backend.dto.error.ErrorDetailDTO;
-import com.nracademy.backend.entity.enums.RoleType;
-import com.nracademy.backend.entity.enums.StatusCode;
-import com.nracademy.backend.repository.UserRepository;
-import com.nracademy.backend.service.UserService;
-import com.nracademy.backend.service.S3Service;
-
-import lombok.RequiredArgsConstructor;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +49,6 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 
     UserRepository userRepository;
-    RoleServiceImpl roleService;
-    PasswordEncoder passwordEncoder;
-    S3Service s3Service;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,13 +65,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User createUser(RegisterRequest request) {
-        User user = new User();
-        String email = request.getEmail();
-        validateEmailExists(email, null);
-        user.setEmail(email);
-        User newUser = userRepository.save(user);
-        roleService.addRoleToUser(user.getEmail(), RoleType.USER);
-        return newUser;
+        validateEmailExists(request.getEmail(), null);
+        User user = User.builder()
+                .email(request.getEmail())
+                .name(request.getEmail())
+                .surname("")
+                .role(Role.STUDENT)
+                .status(UserStatus.ACTIVE)
+                .build();
+        return userRepository.save(user);
     }
 
     @Override
@@ -80,7 +91,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UUID> getUserIds() {
-        return userRepository.findIdsByIsActiveTrue();
+        return userRepository.findIdsByStatus(UserStatus.ACTIVE);
     }
 
     @Override
@@ -95,32 +106,60 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(id);
     }
 
+    @Override
+    public PageResponse<UserDto> listUsersForSuperAdmin(UUID courseId, Role role, UserStatus status, String q, Instant createdFrom, Instant createdTo, int page, int size, List<String> sort) {
+        return null;
+    }
+
+    @Override
+    public UserDto getUserForSuperAdmin(UUID userId) {
+        return null;
+    }
+
+    @Override
+    public UserDto createUserForSuperAdmin(CreateUserRequest request) {
+        return null;
+    }
+
+    @Override
+    public UserDto updateUserForSuperAdmin(UUID userId, UpdateUserRequest request) {
+        return null;
+    }
+
+    @Override
+    public UserDto updateUserStatusForSuperAdmin(UUID userId, UserStatusUpdateRequest request) {
+        return null;
+    }
+
     private void validateEmailExists(String email, UUID userId) {
         boolean existsByEmail = userId == null ?
                 userRepository.existsByEmail(email) :
                 userRepository.existsByEmailAndIdNot(email, userId);
-        if (existsByEmail)
+        if (existsByEmail) {
             throw new EmailAlreadyRegisteredException(
                     "Email already registered. Email: " + email,
                     StatusCode.EMAIL_ALREADY_REGISTERED, List.of());
+        }
     }
 
     private void checkAuthentication(Authentication authentication) {
         if (!authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken)
+                authentication instanceof AnonymousAuthenticationToken) {
             throw new UnauthenticatedException(
                     "Unauthorized", StatusCode.UNAUTHENTICATED, List.of());
+        }
     }
 
     private UserMeResponse mapToUserMeResponse(User user) {
-        Set<RoleType> roleTypes = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
         return UserMeResponse.builder()
                 .id(user.getId())
+                .courseId(user.getCourseId())
+                .name(user.getName())
+                .surname(user.getSurname())
                 .email(user.getEmail())
-                .isActive(user.isActive())
-                .roles(roleTypes)
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .lastLoginAt(user.getLastLoginAt())
                 .build();

@@ -7,8 +7,9 @@ import com.nracademy.backend.dto.request.RegisterRequest;
 import com.nracademy.backend.dto.response.AuthResponse;
 import com.nracademy.backend.entity.auth.RefreshToken;
 import com.nracademy.backend.entity.enums.BlacklistReason;
-import com.nracademy.backend.entity.enums.RoleType;
+import com.nracademy.backend.entity.enums.Role;
 import com.nracademy.backend.entity.enums.StatusCode;
+import com.nracademy.backend.entity.enums.UserStatus;
 import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.exception.common.EmailAlreadyRegisteredException;
 import com.nracademy.backend.exception.common.InvalidCurrentPasswordException;
@@ -20,7 +21,6 @@ import com.nracademy.backend.repository.RefreshTokenRepository;
 import com.nracademy.backend.repository.UserRepository;
 import com.nracademy.backend.service.AuthService;
 import com.nracademy.backend.service.BlackListService;
-import com.nracademy.backend.service.RoleService;
 import com.nracademy.backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -45,7 +45,6 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final RoleService roleService;
     private final BlackListService blackListService;
 
     @Override
@@ -62,16 +61,18 @@ public class AuthServiceImpl implements AuthService {
 
         User user = User.builder()
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .name(request.getName())
+                .surname("")
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(Role.STUDENT)
+                .status(UserStatus.ACTIVE)
                 .build();
         userRepository.save(user);
-        roleService.addRoleToUser(user.getEmail(), RoleType.USER);
     }
 
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        // this line triggers AuthenticationProviderImpl.authenticate() under the hood
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -97,6 +98,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshTokenStr)
                 .build();
     }
+
     @Override
     @Transactional
     public AuthResponse refresh(RefreshRequest request) {
@@ -111,16 +113,12 @@ public class AuthServiceImpl implements AuthService {
 
         String email = stored.getUser().getEmail();
 
-        // 1. revoke the old one — this UPDATE happens because `stored` is a managed entity
-        //    and @Transactional auto-flushes the change at commit
         stored.setRevoked(true);
         stored.setRevokedAt(LocalDateTime.now());
 
-        // 2. issue new tokens
         String newAccessToken = jwtUtil.generateAccessToken(email);
         String newRefreshTokenStr = jwtUtil.generateRefreshToken(email);
 
-        // 3. persist the new refresh token as its own row (this is the missing INSERT)
         RefreshToken newRefreshToken = RefreshToken.builder()
                 .token(newRefreshTokenStr)
                 .user(stored.getUser())
@@ -163,16 +161,14 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new UserEmailNotFoundException(
                         "User not found", StatusCode.USER_EMAIL_NOT_FOUND, List.of()));
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new InvalidCurrentPasswordException(
                     "Current password is incorrect", StatusCode.INVALID_CURRENT_PASSWORD, List.of());
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // Force re-login everywhere: blacklist the token used for this request,
-        // and revoke every other active refresh token this user holds.
         blackListService.blacklistToken(accessToken, BlacklistReason.PASSWORD_CHANGED);
 
         List<RefreshToken> activeRefreshTokens =

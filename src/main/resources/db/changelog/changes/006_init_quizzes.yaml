@@ -1,0 +1,381 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-create-quizzes
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: quizzes
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: teacher_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: duration_minutes
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: available_from
+                  type: timestamp
+              - column:
+                  name: available_until
+                  type: timestamp
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: quizzes
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_quizzes_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quizzes
+            baseColumnNames: group_id
+            referencedTableName: groups
+            referencedColumnNames: id
+            constraintName: fk_quizzes_group
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quizzes
+            baseColumnNames: teacher_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_quizzes_teacher
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_quizzes_course_group_status
+            tableName: quizzes
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: group_id
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 006-create-quiz-questions
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: quiz_questions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quiz_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: question_text
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sort_order
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: points
+                  type: numeric(8, 2)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: quiz_questions
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_quiz_questions_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_questions
+            baseColumnNames: quiz_id
+            referencedTableName: quizzes
+            referencedColumnNames: id
+            constraintName: fk_quiz_questions_quiz
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_quiz_questions_course_quiz_sort
+            tableName: quiz_questions
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: quiz_id
+              - column:
+                  name: sort_order
+
+  - changeSet:
+      id: 006-create-quiz-options
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: quiz_options
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: question_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: option_text
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: correct
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sort_order
+                  type: int
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: quiz_options
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_quiz_options_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_options
+            baseColumnNames: question_id
+            referencedTableName: quiz_questions
+            referencedColumnNames: id
+            constraintName: fk_quiz_options_question
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_quiz_options_course_question
+            tableName: quiz_options
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: question_id
+
+  - changeSet:
+      id: 006-create-quiz-attempts
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: quiz_attempts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quiz_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: attempt_no
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: started_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: submitted_at
+                  type: timestamp
+              - column:
+                  name: score
+                  type: numeric(8, 2)
+              - column:
+                  name: correct_count
+                  type: int
+              - column:
+                  name: total_questions
+                  type: int
+        - addForeignKeyConstraint:
+            baseTableName: quiz_attempts
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_quiz_attempts_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_attempts
+            baseColumnNames: quiz_id
+            referencedTableName: quizzes
+            referencedColumnNames: id
+            constraintName: fk_quiz_attempts_quiz
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_attempts
+            baseColumnNames: student_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_quiz_attempts_student
+            onDelete: RESTRICT
+        - addUniqueConstraint:
+            tableName: quiz_attempts
+            columnNames: course_id, quiz_id, student_id, attempt_no
+            constraintName: uk_quiz_attempts_course_quiz_student_attempt
+        - createIndex:
+            indexName: idx_quiz_attempts_course_status_expires
+            tableName: quiz_attempts
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: status
+              - column:
+                  name: expires_at
+
+  - changeSet:
+      id: 006-create-quiz-answers
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: quiz_answers
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: attempt_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: question_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: selected_option_id
+                  type: uuid
+              - column:
+                  name: correct
+                  type: boolean
+              - column:
+                  name: earned_points
+                  type: numeric(8, 2)
+        - addForeignKeyConstraint:
+            baseTableName: quiz_answers
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_quiz_answers_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_answers
+            baseColumnNames: attempt_id
+            referencedTableName: quiz_attempts
+            referencedColumnNames: id
+            constraintName: fk_quiz_answers_attempt
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: quiz_answers
+            baseColumnNames: question_id
+            referencedTableName: quiz_questions
+            referencedColumnNames: id
+            constraintName: fk_quiz_answers_question
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: quiz_answers
+            baseColumnNames: selected_option_id
+            referencedTableName: quiz_options
+            referencedColumnNames: id
+            constraintName: fk_quiz_answers_selected_option
+            onDelete: SET NULL
+        - addUniqueConstraint:
+            tableName: quiz_answers
+            columnNames: course_id, attempt_id, question_id
+            constraintName: uk_quiz_answers_course_attempt_question

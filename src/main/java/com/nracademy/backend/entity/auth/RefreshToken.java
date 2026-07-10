@@ -19,7 +19,7 @@ import com.nracademy.backend.entity.user.User;
     name = "refresh_token",
     indexes = {
         @Index(name="idx_refresh_user", columnList="user_id"),
-        @Index(name="idx_refresh_exp", columnList="expiryDate")
+        @Index(name="idx_refresh_exp", columnList="expiry_date")
     }
 )
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -32,7 +32,7 @@ public class RefreshToken {
     @Column(unique = true, nullable = false)
     String token;
 
-    @Column(nullable = false)
+    @Column(name = "expiry_date", nullable = false)
     LocalDateTime expiryDate;
 
     @Builder.Default

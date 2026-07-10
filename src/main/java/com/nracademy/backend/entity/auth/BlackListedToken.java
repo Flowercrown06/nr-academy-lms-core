@@ -19,7 +19,7 @@ import com.nracademy.backend.entity.enums.BlacklistReason;
 @Table(name = "blacklisted_tokens",
         indexes = {
                 @Index(name = "idx_token", columnList = "token"),
-                @Index(name = "idx_expires_at", columnList = "expiresAt")
+                @Index(name = "idx_expires_at", columnList = "expires_at")
         })
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BlackListedToken {
@@ -31,10 +31,10 @@ public class BlackListedToken {
     @Column(unique = true, nullable = false, columnDefinition = "TEXT")
     String token;
 
-    @Column(nullable = false)
+    @Column(name = "expires_at", nullable = false)
     LocalDateTime expiresAt;
 
-    @Column
+    @Column(name = "blacklisted_at")
     LocalDateTime blacklistedAt;
 
     @Enumerated(EnumType.STRING)

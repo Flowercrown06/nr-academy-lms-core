@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001_init_courses.yaml
+  - include:
+      file: db/changelog/changes/002_init_users_auth.yaml
+  - include:
+      file: db/changelog/changes/003_init_groups.yaml
+  - include:
+      file: db/changelog/changes/004_init_lessons_attendance.yaml
+  - include:
+      file: db/changelog/changes/005_init_assignments.yaml
+  - include:
+      file: db/changelog/changes/006_init_quizzes.yaml
+  - include:
+      file: db/changelog/changes/007_init_billing.yaml
+  - include:
+      file: db/changelog/changes/008_init_media.yaml
+  - include:
+      file: db/changelog/changes/009_init_audit_logs.yaml

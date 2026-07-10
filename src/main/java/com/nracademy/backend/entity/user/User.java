@@ -1,21 +1,19 @@
 package com.nracademy.backend.entity.user;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-
+import com.nracademy.backend.entity.course.Course;
+import com.nracademy.backend.entity.enums.Role;
+import com.nracademy.backend.entity.enums.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -27,6 +25,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -34,55 +36,69 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "users", indexes = @Index(columnList = "email"))
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email", unique = true),
+                @Index(name = "idx_users_course_role", columnList = "course_id, role"),
+                @Index(name = "idx_users_course_status", columnList = "course_id, status")
+        }
+)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
+    @Column(name = "course_id")
+    UUID courseId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", insertable = false, updatable = false)
+    Course course;
+
+    @Column(nullable = false)
+    String name;
+
+    @Column(nullable = false)
+    String surname;
+
     @Column(nullable = false, unique = true)
     String email;
 
-    @Column(nullable = false, unique = true)
     String phone;
 
+    @Column(name = "password_hash", nullable = false)
+    String passwordHash;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    String password;
+    Role role;
 
     @Builder.Default
-    boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "last_login_at")
-    LocalDateTime lastLoginAt;
+    Instant lastLoginAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    LocalDateTime createdAt;
+    Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    LocalDateTime updatedAt;
-
-    @Builder.Default
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    Set<Role> roles = new HashSet<>();
+    Instant updatedAt;
 
     @PrePersist
     void prePersist() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+        updatedAt = Instant.now();
     }
 
     @Override
@@ -92,27 +108,16 @@ public class User {
         return id != null && id.equals(other.id);
     }
 
-    public void addRole(Role role) {
-        if (role == null) return;
-        roles.add(role);
-        role.getUsers().add(this);
-    }
-
-    public void removeRole(Role role) {
-        if (role == null) return;
-        roles.remove(role);
-        role.getUsers().remove(this);
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public void updateLastLogin() {
-        this.lastLoginAt = LocalDateTime.now();
+        lastLoginAt = Instant.now();
     }
 
     public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
+        return status == UserStatus.ACTIVE;
     }
 }

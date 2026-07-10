@@ -1,0 +1,143 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-groups
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: groups
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: teacher_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: groups
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_groups_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: groups
+            baseColumnNames: teacher_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_groups_teacher
+            onDelete: RESTRICT
+        - addUniqueConstraint:
+            tableName: groups
+            columnNames: course_id, name
+            constraintName: uk_groups_course_name
+        - createIndex:
+            indexName: idx_groups_course_teacher
+            tableName: groups
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: teacher_id
+
+  - changeSet:
+      id: 003-create-group-students
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: group_students
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: joined_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: group_students
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_group_students_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: group_students
+            baseColumnNames: group_id
+            referencedTableName: groups
+            referencedColumnNames: id
+            constraintName: fk_group_students_group
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: group_students
+            baseColumnNames: student_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_group_students_student
+            onDelete: RESTRICT
+        - addUniqueConstraint:
+            tableName: group_students
+            columnNames: course_id, group_id, student_id
+            constraintName: uk_group_students_course_group_student
+        - createIndex:
+            indexName: idx_group_students_course_student
+            tableName: group_students
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: student_id

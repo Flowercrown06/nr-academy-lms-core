@@ -49,4 +49,13 @@ public enum StatusCode {
 
     // --- Fallback for uncategorized DB-level failures ---
     DATA_INTEGRITY_VIOLATION,
+
+    // --- Course ---
+    COURSE_NOT_FOUND,
+    DUPLICATE_COURSE_NAME,
+    INVALID_COMMISSION_RATE,
+    INVALID_PAYMENT_PER_STUDENT,
+
+    // --- User admin ---
+    INVALID_ROLE,
 }

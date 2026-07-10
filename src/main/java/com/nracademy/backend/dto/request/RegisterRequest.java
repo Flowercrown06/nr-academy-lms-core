@@ -1,6 +1,8 @@
 package com.nracademy.backend.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +21,12 @@ public class RegisterRequest {
     @NotBlank
     String surname;
     @NotBlank
+    @Email
     String email;
     @NotBlank
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     String password;
     @NotBlank
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     String confirmPassword;
 }

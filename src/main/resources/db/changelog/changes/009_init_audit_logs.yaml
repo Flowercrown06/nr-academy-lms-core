@@ -1,0 +1,73 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-create-audit-logs
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+              - column:
+                  name: actor_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_type
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_id
+                  type: uuid
+              - column:
+                  name: metadata
+                  type: jsonb
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: audit_logs
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_audit_logs_course
+            onDelete: SET NULL
+        - addForeignKeyConstraint:
+            baseTableName: audit_logs
+            baseColumnNames: actor_user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_audit_logs_actor
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_audit_logs_course_created
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: created_at
+        - createIndex:
+            indexName: idx_audit_logs_entity
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: entity_type
+              - column:
+                  name: entity_id

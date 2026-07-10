@@ -1,0 +1,189 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-lessons
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: lessons
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: teacher_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(512)
+              - column:
+                  name: lesson_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: jitsi_url
+                  type: varchar(1024)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: lessons
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_lessons_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: lessons
+            baseColumnNames: group_id
+            referencedTableName: groups
+            referencedColumnNames: id
+            constraintName: fk_lessons_group
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: lessons
+            baseColumnNames: teacher_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_lessons_teacher
+            onDelete: RESTRICT
+        - createIndex:
+            indexName: idx_lessons_course_group_date
+            tableName: lessons
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: group_id
+              - column:
+                  name: lesson_date
+        - createIndex:
+            indexName: idx_lessons_course_status
+            tableName: lessons
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_lessons_course_teacher
+            tableName: lessons
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: teacher_id
+
+  - changeSet:
+      id: 004-create-attendance-records
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: attendance_records
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: course_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: lesson_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: present
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_by
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+        - addForeignKeyConstraint:
+            baseTableName: attendance_records
+            baseColumnNames: course_id
+            referencedTableName: courses
+            referencedColumnNames: id
+            constraintName: fk_attendance_course
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: attendance_records
+            baseColumnNames: lesson_id
+            referencedTableName: lessons
+            referencedColumnNames: id
+            constraintName: fk_attendance_lesson
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: attendance_records
+            baseColumnNames: student_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_attendance_student
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: attendance_records
+            baseColumnNames: recorded_by
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_attendance_recorded_by
+            onDelete: RESTRICT
+        - addUniqueConstraint:
+            tableName: attendance_records
+            columnNames: course_id, lesson_id, student_id
+            constraintName: uk_attendance_course_lesson_student
+        - createIndex:
+            indexName: idx_attendance_course_student
+            tableName: attendance_records
+            columns:
+              - column:
+                  name: course_id
+              - column:
+                  name: student_id

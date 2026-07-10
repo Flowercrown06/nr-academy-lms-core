@@ -24,7 +24,6 @@ import java.util.UUID;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
     /** Builds the standard error envelope so every handler below stays one-liner-short. */
     private ResponseEntity<ErrorResponse> buildResponse(String code, String message, HttpStatus status) {
         ErrorResponse errorResponse = ErrorResponse.builder()

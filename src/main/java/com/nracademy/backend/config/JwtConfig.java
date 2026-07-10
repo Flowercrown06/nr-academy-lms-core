@@ -16,8 +16,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JwtConfig {
 
-    @Value("${jwt.secret:rentacar-secret-key-change-this-in-production-to-a-long-random-string-at-least-256-bits-minimum-length-required-for-security}")
-    String jwtSecret;
+    @Value("${jwt.secret:MyVeryLongSecretKeyThatIsAtLeast32CharactersLong123}")
+    private String jwtSecret;
 
     @Value("${jwt.expiration:86400000}")
     long expiration;

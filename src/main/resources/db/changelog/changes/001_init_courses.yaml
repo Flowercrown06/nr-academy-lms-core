@@ -1,0 +1,73 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-courses
+      author: nr-academy
+      changes:
+        - createTable:
+            tableName: courses
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: legal_name
+                  type: varchar(255)
+              - column:
+                  name: contact_email
+                  type: varchar(255)
+              - column:
+                  name: contact_phone
+                  type: varchar(50)
+              - column:
+                  name: logo_url
+                  type: varchar(1024)
+              - column:
+                  name: logo_key
+                  type: varchar(512)
+              - column:
+                  name: primary_color
+                  type: varchar(16)
+              - column:
+                  name: secondary_color
+                  type: varchar(16)
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: commission_rate
+                  type: numeric(5, 2)
+              - column:
+                  name: payment_per_student
+                  type: numeric(12, 2)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_courses_status
+            tableName: courses
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_courses_name
+            tableName: courses
+            columns:
+              - column:
+                  name: name

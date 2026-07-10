@@ -1,9 +1,12 @@
 package com.nracademy.backend.security;
 
-import com.nracademy.backend.entity.user.Role;
+import com.nracademy.backend.dto.error.ErrorDetailDTO;
+import com.nracademy.backend.entity.enums.StatusCode;
+import com.nracademy.backend.entity.enums.UserStatus;
 import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.exception.common.UserEmailNotFoundException;
+import com.nracademy.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,15 +16,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import com.nracademy.backend.dto.error.ErrorDetailDTO;
-import com.nracademy.backend.entity.enums.StatusCode;
-import com.nracademy.backend.exception.common.UserEmailNotFoundException;
-import com.nracademy.backend.repository.UserRepository;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -38,18 +34,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                         List.of(new ErrorDetailDTO("email", email))
                 ));
 
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        Set<Role> roles = user.getRoles();
-
-        for (Role role : roles) {
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName().name()));
-        }
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
 
         return UserDetailsImpl.builder()
-                .baseAuthorities(grantedAuthorities)
+                .baseAuthorities(List.of(authority))
                 .email(user.getEmail())
-                .password(user.getPassword())
-                .enabled(user.isActive())
+                .password(user.getPasswordHash())
+                .enabled(user.getStatus() == UserStatus.ACTIVE)
                 .build();
     }
 
@@ -57,8 +48,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (Objects.isNull(authentication) ||
                 !authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken)
+                authentication instanceof AnonymousAuthenticationToken) {
             return false;
+        }
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_" + role));
     }
