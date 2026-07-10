@@ -3,32 +3,13 @@ package com.nracademy.backend.mapper;
 import com.nracademy.backend.dto.response.AuthUserResponse;
 import com.nracademy.backend.dto.response.UserDto;
 import com.nracademy.backend.entity.user.User;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
 
-@Component
-public class UserMapper {
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-    public UserDto toDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .courseId(user.getCourseId())
-                .name(user.getName())
-                .surname(user.getSurname())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .status(user.getStatus())
-                .createdAt(user.getCreatedAt())
-                .build();
-    }
+    UserDto toDto(User user);
 
-    public AuthUserResponse toAuthUser(User user) {
-        return AuthUserResponse.builder()
-                .id(user.getId())
-                .courseId(user.getCourseId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .status(user.getStatus())
-                .build();
-    }
+    AuthUserResponse toAuthUser(User user);
+
 }
