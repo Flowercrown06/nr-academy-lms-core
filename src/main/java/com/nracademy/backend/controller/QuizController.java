@@ -1,0 +1,124 @@
+package com.nracademy.backend.controller;
+
+import com.nracademy.backend.dto.request.CreateQuestionRequest;
+import com.nracademy.backend.dto.request.CreateQuizRequest;
+import com.nracademy.backend.dto.request.QuizStatusUpdateRequest;
+import com.nracademy.backend.dto.request.UpdateQuestionRequest;
+import com.nracademy.backend.dto.request.UpdateQuizRequest;
+import com.nracademy.backend.dto.response.QuizDto;
+import com.nracademy.backend.dto.response.TeacherQuestionDto;
+import com.nracademy.backend.entity.enums.QuizStatus;
+import com.nracademy.backend.service.impl.QuizService;
+import com.nracademy.backend.util.PageRequestUtil;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Teacher / Course Owner side of quiz management.
+ * Everything here returns Teacher* DTOs (correct option flags included) -
+ * this controller must never be reused for student-facing responses.
+ */
+@RestController
+@RequestMapping("/api/v1/quizzes")
+@RequiredArgsConstructor
+public class QuizController {
+
+    private final QuizService quizService;
+
+    // Doc 9: allowed sort fields for GET /api/v1/quizzes (mapped onto actual
+    // entity field names - the doc's "startAt"/"endAt" correspond to our
+    // availableFrom/availableUntil columns).
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("title", "availableFrom", "availableUntil", "durationMinutes", "createdAt", "status");
+    private static final String DEFAULT_SORT = "createdAt,desc";
+
+    @GetMapping
+    public ResponseEntity<Page<QuizDto>> listQuizzes(
+            @RequestParam(required = false) UUID groupId,
+            @RequestParam(required = false) QuizStatus status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableTo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) List<String> sort) {
+
+        Pageable pageable = PageRequestUtil.create(page, size, sort, ALLOWED_SORT_FIELDS, DEFAULT_SORT);
+        Page<QuizDto> result = quizService.listQuizzes(
+                groupId, status, q, availableFrom, availableTo, createdFrom, createdTo, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping
+    public ResponseEntity<QuizDto> createQuiz(@Valid @RequestBody CreateQuizRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuiz(request));
+    }
+
+    @GetMapping("/{quizId}")
+    public ResponseEntity<QuizDto> getQuiz(@PathVariable UUID quizId) {
+        return ResponseEntity.ok(quizService.getQuiz(quizId));
+    }
+
+    @PatchMapping("/{quizId}")
+    public ResponseEntity<QuizDto> updateQuiz(
+            @PathVariable UUID quizId,
+            @Valid @RequestBody UpdateQuizRequest request) {
+        return ResponseEntity.ok(quizService.updateQuiz(quizId, request));
+    }
+
+    @PatchMapping("/{quizId}/status")
+    public ResponseEntity<QuizDto> updateStatus(
+            @PathVariable UUID quizId,
+            @Valid @RequestBody QuizStatusUpdateRequest request) {
+        return ResponseEntity.ok(quizService.updateStatus(quizId, request));
+    }
+
+    @GetMapping("/{quizId}/questions")
+    public ResponseEntity<List<TeacherQuestionDto>> getQuestions(@PathVariable UUID quizId) {
+        return ResponseEntity.ok(quizService.getQuestions(quizId));
+    }
+
+    @PostMapping("/{quizId}/questions")
+    public ResponseEntity<TeacherQuestionDto> addQuestion(
+            @PathVariable UUID quizId,
+            @Valid @RequestBody CreateQuestionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(quizService.addQuestion(quizId, request));
+    }
+
+    @PatchMapping("/{quizId}/questions/{questionId}")
+    public ResponseEntity<TeacherQuestionDto> updateQuestion(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId,
+            @Valid @RequestBody UpdateQuestionRequest request) {
+        return ResponseEntity.ok(quizService.updateQuestion(quizId, questionId, request));
+    }
+
+    @DeleteMapping("/{quizId}/questions/{questionId}")
+    public ResponseEntity<Void> deleteQuestion(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId) {
+        quizService.deleteQuestion(quizId, questionId);
+        return ResponseEntity.noContent().build();
+    }
+}
