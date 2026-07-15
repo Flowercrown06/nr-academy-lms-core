@@ -1,7 +1,5 @@
 package com.nracademy.backend.repository;
 
-import com.nracademy.backend.entity.enums.Role;
-import com.nracademy.backend.entity.enums.UserStatus;
 import com.nracademy.backend.entity.group.Group;
 import com.nracademy.backend.entity.enums.GroupStatus;
 import org.springframework.data.domain.Page;

@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     Page<User> findAllByStatus(UserStatus status, Pageable pageable);
 
-    Page<User> findAllByCreatedAtBetween(Instant start, Instant end, Pageable pageable);
+    Page<User> findAllByCreatedAtBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     long countByStatus(UserStatus status);
 

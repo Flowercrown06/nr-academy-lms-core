@@ -24,8 +24,7 @@ import java.util.UUID;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    /** Builds the standard error envelope so every handler below stays one-liner-short. */
-    private ResponseEntity<ErrorResponse> buildResponse(String code, String message, HttpStatus status) {
+     private ResponseEntity<ErrorResponse> buildResponse(String code, String message, HttpStatus status) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error(ErrorDTO.builder()
                     .code(code)
@@ -89,8 +88,6 @@ public class GlobalExceptionHandler {
             "Request body is missing or malformed.", HttpStatus.BAD_REQUEST);
     }
 
-    // Kept last and most specific: your own AppException subclasses already carry their
-    // own status code + http status, so this handler just forwards them as-is.
     @ExceptionHandler(value = AppException.class)
     public ResponseEntity<ErrorResponse> handleAppException(AppException e) {
         ErrorResponse response = ErrorResponse.builder()

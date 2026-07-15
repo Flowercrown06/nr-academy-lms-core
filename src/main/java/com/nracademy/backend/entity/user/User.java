@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -81,24 +81,24 @@ public class User {
     UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "last_login_at")
-    Instant lastLoginAt;
+    LocalDateTime lastLoginAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt;
+    LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt;
+    LocalDateTime updatedAt;
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @Override
@@ -114,7 +114,7 @@ public class User {
     }
 
     public void updateLastLogin() {
-        lastLoginAt = Instant.now();
+        lastLoginAt = LocalDateTime.now();
     }
 
     public boolean isActive() {

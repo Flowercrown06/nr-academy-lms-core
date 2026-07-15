@@ -21,7 +21,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -81,21 +81,21 @@ public class Course {
     BigDecimal paymentPerStudent;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt;
+    LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt;
+    LocalDateTime updatedAt;
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @Override

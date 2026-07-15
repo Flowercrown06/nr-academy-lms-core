@@ -6,7 +6,7 @@ import com.nracademy.backend.entity.quiz.QuizQuestion;
 import com.nracademy.backend.exception.common.QuizAutoCompletionFailedException;
 import com.nracademy.backend.repository.QuizAttemptRepository;
 import com.nracademy.backend.repository.QuizQuestionRepository;
-import com.nracademy.backend.service.impl.QuizGradingService;
+import com.nracademy.backend.service.QuizGradingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

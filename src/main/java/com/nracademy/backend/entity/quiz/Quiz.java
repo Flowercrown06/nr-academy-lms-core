@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,10 +90,10 @@ public class Quiz {
     LocalDateTime availableUntil;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt;
+    LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt;
+    LocalDateTime updatedAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "quiz")
@@ -101,14 +101,14 @@ public class Quiz {
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @Override

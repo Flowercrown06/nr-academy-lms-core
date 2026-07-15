@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -69,7 +69,7 @@ public class GroupStudent {
     User student;
 
     @Column(name = "joined_at", nullable = false, updatable = false)
-    Instant joinedAt;
+    LocalDateTime joinedAt;
 
     @Builder.Default
     @Column(nullable = false)
@@ -78,7 +78,7 @@ public class GroupStudent {
     @PrePersist
     void prePersist() {
         if (joinedAt == null) {
-            joinedAt = Instant.now();
+            joinedAt = LocalDateTime.now();
         }
     }
 
