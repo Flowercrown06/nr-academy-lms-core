@@ -18,6 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+/**
+ * Student-facing quiz attempt endpoints.
+ *
+ * SECURITY-CRITICAL: every response here must come from StudentQuestionDto /
+ * StudentOptionDto (via QuizAttemptService), never TeacherQuestionDto /
+ * TeacherOptionDto. If you ever need to add an endpoint here, reuse
+ * QuizAttemptService - do not call QuizService from this controller.
+ */
 @RestController
 @RequestMapping("/api/v1/student")
 @RequiredArgsConstructor

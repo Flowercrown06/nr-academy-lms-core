@@ -63,4 +63,7 @@ public class RefreshToken {
         updatedAt = LocalDateTime.now();
     }
 
+    public void updateRevokedAt() {
+        this.revokedAt = LocalDateTime.now();
+    }
 }

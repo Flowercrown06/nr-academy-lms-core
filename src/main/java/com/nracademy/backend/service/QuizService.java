@@ -11,6 +11,15 @@ import com.nracademy.backend.dto.response.TeacherQuestionDto;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Teacher / Course Owner side of quiz management: create quizzes, manage
+ * questions and options, and transition quiz status (DRAFT -> PUBLISHED -> CLOSED).
+ *
+ * Student-facing concerns (starting attempts, answering, grading) live in
+ * QuizAttemptService and QuizGradingService instead - this service never
+ * returns a student-safe DTO, only Teacher* DTOs, since everything here is
+ * gated to COURSE_OWNER / TEACHER roles.
+ */
 public interface QuizService {
     QuizDto createQuiz(CreateQuizRequest request);
 

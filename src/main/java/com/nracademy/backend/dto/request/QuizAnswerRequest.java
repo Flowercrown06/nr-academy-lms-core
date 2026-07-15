@@ -16,5 +16,6 @@ public class QuizAnswerRequest {
     @NotNull
     private UUID questionId;
 
+    // Nullable: a student may clear/skip an answer by sending selectedOptionId = null.
     private UUID selectedOptionId;
 }

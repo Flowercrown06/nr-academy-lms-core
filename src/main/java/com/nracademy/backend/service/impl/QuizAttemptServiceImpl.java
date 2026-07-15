@@ -39,6 +39,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Student-facing quiz attempt lifecycle: start, save answers, submit, view result.
+ *
+ * Every method here is scoped to (courseId, current student) - a student
+ * can only ever see or act on their OWN attempts, never another student's,
+ * and never outside their tenant. That scoping is enforced by always querying
+ * repositories with courseId + studentId together, never by id alone.
+ */
 @Service
 @RequiredArgsConstructor
 public class QuizAttemptServiceImpl implements QuizAttemptService {
@@ -74,6 +82,7 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
             throw new QuizNotAssignedToStudentException();
         }
 
+        // One attempt in flight at a time - block a second concurrent start.
         quizAttemptRepository
                 .findByCourseIdAndQuizIdAndStudentIdAndStatus(
                         courseId, quizId, student.getId(), QuizAttemptStatus.IN_PROGRESS)
@@ -142,6 +151,8 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
                 }
             }
 
+            // Upsert: a student can change their mind and re-save an answer
+            // for the same question any number of times while IN_PROGRESS.
             QuizAnswer answer = quizAnswerRepository
                     .findByCourseIdAndAttemptIdAndQuestionId(courseId, attemptId, answerRequest.getQuestionId())
                     .orElseGet(() -> QuizAnswer.builder()
@@ -151,6 +162,8 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
                             .build());
 
             answer.setSelectedOptionId(answerRequest.getSelectedOptionId());
+            // correct / earnedPoints are intentionally left untouched here -
+            // grading happens exactly once, at submit time, not per-save.
             quizAnswerRepository.save(answer);
         }
     }
@@ -173,6 +186,9 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
         LocalDateTime now = LocalDateTime.now();
         boolean expired = now.isAfter(attempt.getExpiresAt());
 
+        // Per doc 12.7: if submitted after expiresAt, we still grade what was
+        // saved so far, but record it as AUTO_SUBMITTED rather than SUBMITTED,
+        // so the distinction between "on time" and "late" is preserved.
         QuizAttemptStatus finalStatus = expired ? QuizAttemptStatus.AUTO_SUBMITTED : QuizAttemptStatus.SUBMITTED;
 
         quizGradingService.grade(attempt, questions, finalStatus, now);
@@ -189,11 +205,14 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
         return toResultDto(attempt);
     }
 
+    // ---- helpers ----
 
     private QuizAttempt requireOwnAttempt(UUID courseId, UUID studentId, UUID attemptId) {
         QuizAttempt attempt = quizAttemptRepository.findByCourseIdAndId(courseId, attemptId)
                 .orElseThrow(() -> new QuizAttemptNotFoundException(attemptId));
 
+        // Student can access only own attempt (doc 8.14 rule) - not just any
+        // attempt within the tenant.
         if (!attempt.getStudentId().equals(studentId)) {
             throw new QuizAttemptNotFoundException(attemptId);
         }

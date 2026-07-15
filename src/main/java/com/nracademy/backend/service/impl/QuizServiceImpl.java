@@ -33,6 +33,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Teacher / Course Owner side of quiz management: create quizzes, manage
+ * questions and options, and transition quiz status (DRAFT -> PUBLISHED -> CLOSED).
+ *
+ * Student-facing concerns (starting attempts, answering, grading) live in
+ * QuizAttemptService and QuizGradingService instead - this class never
+ * returns a student-safe DTO, only Teacher* DTOs, since everything here is
+ * gated to COURSE_OWNER / TEACHER roles.
+ */
 @Service
 @RequiredArgsConstructor
 public class QuizServiceImpl implements QuizService {
@@ -45,6 +54,7 @@ public class QuizServiceImpl implements QuizService {
 
     private static final Set<Role> QUIZ_MANAGER_ROLES = Set.of(Role.COURSE_OWNER, Role.TEACHER);
 
+    // Legal status transitions. DRAFT -> PUBLISHED -> CLOSED, no going back.
     private static final java.util.Map<QuizStatus, Set<QuizStatus>> ALLOWED_TRANSITIONS = java.util.Map.of(
             QuizStatus.DRAFT, Set.of(QuizStatus.PUBLISHED),
             QuizStatus.PUBLISHED, Set.of(QuizStatus.CLOSED),
@@ -193,6 +203,10 @@ public class QuizServiceImpl implements QuizService {
         if (request.getOptions() != null) {
             validateHasCorrectOption(request.getOptions());
 
+            // Replace-all strategy: simplest correct approach for a small
+            // per-question option list. Delete existing options for this
+            // question, then re-insert the submitted set. Avoids having to
+            // diff/match old vs new options by id.
             List<QuizOption> existing = quizOptionRepository
                     .findByCourseIdAndQuestionIdOrderBySortOrderAsc(quiz.getCourseId(), question.getId());
             quizOptionRepository.deleteAll(existing);
@@ -226,8 +240,11 @@ public class QuizServiceImpl implements QuizService {
                 .filter(q -> q.getQuizId().equals(quizId) && q.getCourseId().equals(quiz.getCourseId()))
                 .orElseThrow(() -> new QuizQuestionNotFoundException(questionId));
 
+        // Options cascade-delete at the DB level (fk_quiz_options_question ON DELETE CASCADE).
         quizQuestionRepository.delete(question);
     }
+
+    // ---- helpers ----
 
     private User requireQuizManager() {
         User user = tenantGuard.requireAuthenticatedUser();
@@ -241,6 +258,8 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = quizRepository.findByCourseIdAndId(user.getCourseId(), quizId)
                 .orElseThrow(() -> new QuizNotFoundException(quizId));
 
+        // A TEACHER may only manage quizzes they created; a COURSE_OWNER can
+        // manage any quiz within their own tenant (their whole course).
         if (user.getRole() == Role.TEACHER && !quiz.getTeacherId().equals(user.getId())) {
             throw new RoleForbiddenException("You can only manage quizzes you created.");
         }

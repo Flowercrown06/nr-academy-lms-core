@@ -24,6 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Teacher / Course Owner side of quiz management.
+ * Everything here returns Teacher* DTOs (correct option flags included) -
+ * this controller must never be reused for student-facing responses.
+ */
 @RestController
 @RequestMapping("/api/v1/quizzes")
 @RequiredArgsConstructor

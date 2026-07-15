@@ -16,6 +16,25 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Background safety net for quiz attempts (doc 12.7: "Scheduled job also
+ * auto-submits expired IN_PROGRESS attempts").
+ *
+ * Why this exists at all: QuizAttemptService.submitAttempt() only runs when
+ * a student actively calls the submit endpoint. If a student closes their
+ * browser, loses connection, or simply never clicks submit, their attempt
+ * would stay IN_PROGRESS forever with no score - which would be wrong both
+ * for the student (no result ever recorded) and for the teacher (can't see
+ * who finished). This job finds every attempt across ALL tenants whose
+ * expiresAt has already passed and grades them exactly the same way
+ * QuizGradingService.grade() would from the manual submit path.
+ *
+ * Important: this class must NEVER call TenantGuard/CurrentUserService.
+ * Those assume a logged-in HTTP request is in progress (they read
+ * SecurityContextHolder). A scheduled job has no such request - there is no
+ * "current user" here, so we query repositories directly and pass courseId
+ * values straight through from the attempt rows themselves.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +44,12 @@ public class QuizAutoCompletionJob {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizGradingService quizGradingService;
 
+    /**
+     * Runs every 2 minutes. Interval is a balance: frequent enough that a
+     * student who finishes right at the deadline doesn't wait long for a
+     * result, but not so frequent that it hammers the DB with a full-table
+     * scan-ish query every few seconds.
+     */
     @Scheduled(fixedRate = 2 * 60 * 1000)
     @Transactional
     public void autoSubmitExpiredAttempts() {
