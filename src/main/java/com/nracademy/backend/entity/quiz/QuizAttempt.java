@@ -1,8 +1,8 @@
 package com.nracademy.backend.entity.quiz;
 
-import com.nracademy.backend.entity.Course;
+import com.nracademy.backend.entity.course.Course;
 import com.nracademy.backend.entity.enums.QuizAttemptStatus;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -12,6 +12,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Manual mapper (not MapStruct) for the quiz question/option DTOs.
+ *
+ * Why manual: the teacher/student split is a security boundary, not just a
+ * convenience. Writing toTeacherX / toStudentX explicitly means anyone
+ * reading this file can see exactly which fields cross into the student
+ * response, instead of trusting an auto-generated mapping to "do the right
+ * thing" implicitly. Keep this file boring and obvious on purpose.
+ */
 @Component
 public class QuizMapper {
 
@@ -29,6 +38,8 @@ public class QuizMapper {
                 .questionCount(questionCount)
                 .build();
     }
+
+    // ---- Teacher / Course Owner side: includes `correct` ----
 
     public TeacherOptionDto toTeacherOption(QuizOption option) {
         return TeacherOptionDto.builder()
@@ -48,6 +59,8 @@ public class QuizMapper {
                 .options(options.stream().map(this::toTeacherOption).toList())
                 .build();
     }
+
+    // ---- Student side: `correct` is never read, never copied ----
 
     public StudentOptionDto toStudentOption(QuizOption option) {
         return StudentOptionDto.builder()

@@ -2,7 +2,6 @@ package com.nracademy.backend.service.impl;
 
 import com.nracademy.backend.dto.request.SaveQuizAnswersRequest;
 import com.nracademy.backend.dto.response.QuizAttemptResultDto;
-import com.nracademy.backend.dto.response.QuizDto;
 import com.nracademy.backend.dto.response.StartQuizAttemptResponse;
 import com.nracademy.backend.entity.enums.QuizAttemptStatus;
 import com.nracademy.backend.entity.enums.QuizStatus;
@@ -10,7 +9,7 @@ import com.nracademy.backend.entity.quiz.Quiz;
 import com.nracademy.backend.entity.quiz.QuizAnswer;
 import com.nracademy.backend.entity.quiz.QuizAttempt;
 import com.nracademy.backend.entity.quiz.QuizQuestion;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.exception.common.QuizAnswerQuestionMismatchException;
 import com.nracademy.backend.exception.common.QuizAttemptAlreadyStartedException;
 import com.nracademy.backend.exception.common.QuizAttemptAlreadySubmittedException;
@@ -29,23 +28,28 @@ import com.nracademy.backend.repository.QuizAttemptRepository;
 import com.nracademy.backend.repository.QuizOptionRepository;
 import com.nracademy.backend.repository.QuizQuestionRepository;
 import com.nracademy.backend.repository.QuizRepository;
-import com.nracademy.backend.specification.QuizSpecifications;
+import com.nracademy.backend.service.QuizAttemptService;
+import com.nracademy.backend.service.QuizGradingService;
 import com.nracademy.backend.tenant.TenantGuard;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.nracademy.backend.service.QuizAttemptService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Student-facing quiz attempt lifecycle: start, save answers, submit, view result.
+ *
+ * Every method here is scoped to (courseId, current student) - a student
+ * can only ever see or act on their OWN attempts, never another student's,
+ * and never outside their tenant. That scoping is enforced by always querying
+ * repositories with courseId + studentId together, never by id alone.
+ */
 @Service
 @RequiredArgsConstructor
-public class QuizAttemptServiceImpl implements QuizAttemptService{
+public class QuizAttemptServiceImpl implements QuizAttemptService {
 
     private final QuizRepository quizRepository;
     private final QuizQuestionRepository quizQuestionRepository;
@@ -57,50 +61,8 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
     private final QuizMapper quizMapper;
     private final TenantGuard tenantGuard;
 
-    @Transactional(readOnly = true)
-    public Page<QuizDto> listAssignedQuizzes(
-            QuizStatus status,
-            String q,
-            LocalDateTime availableFrom,
-            LocalDateTime availableTo,
-            Boolean attempted,
-            Pageable pageable) {
-
-        User student = tenantGuard.requireAuthenticatedUser();
-        UUID courseId = student.getCourseId();
-
-        List<UUID> groupIds = groupStudentRepository
-                .findByCourseIdAndStudentIdAndActiveTrue(courseId, student.getId())
-                .stream()
-                .map(gs -> gs.getGroup().getId())
-                .toList();
-
-        if (groupIds.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        Specification<Quiz> spec = QuizSpecifications
-                .forStudent(courseId, groupIds, status, q, availableFrom, availableTo);
-
-        // 'attempted' filter: doc allows filtering by whether the student
-        // has already attempted the quiz at least once.
-        if (attempted != null) {
-            List<UUID> attemptedQuizIds = quizAttemptRepository
-                    .findAttemptedQuizIdsByCourseIdAndStudentId(courseId, student.getId());
-            Specification<Quiz> attemptedSpec = attempted
-                    ? (root, query, cb) -> root.get("id").in(attemptedQuizIds)
-                    : (root, query, cb) -> attemptedQuizIds.isEmpty()
-                            ? cb.conjunction()
-                            : cb.not(root.get("id").in(attemptedQuizIds));
-            spec = spec.and(attemptedSpec);
-        }
-
-        return quizRepository.findAll(spec, pageable)
-                .map(quiz -> quizMapper.toDto(quiz,
-                        quizQuestionRepository.findByCourseIdAndQuizIdOrderBySortOrderAsc(courseId, quiz.getId()).size()));
-    }
-
     @Transactional
+    @Override
     public StartQuizAttemptResponse startAttempt(UUID quizId) {
         User student = tenantGuard.requireAuthenticatedUser();
         UUID courseId = student.getCourseId();
@@ -120,6 +82,7 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
             throw new QuizNotAssignedToStudentException();
         }
 
+        // One attempt in flight at a time - block a second concurrent start.
         quizAttemptRepository
                 .findByCourseIdAndQuizIdAndStudentIdAndStatus(
                         courseId, quizId, student.getId(), QuizAttemptStatus.IN_PROGRESS)
@@ -161,6 +124,7 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
     }
 
     @Transactional
+    @Override
     public void saveAnswers(UUID attemptId, SaveQuizAnswersRequest request) {
         User student = tenantGuard.requireAuthenticatedUser();
         UUID courseId = student.getCourseId();
@@ -187,6 +151,8 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
                 }
             }
 
+            // Upsert: a student can change their mind and re-save an answer
+            // for the same question any number of times while IN_PROGRESS.
             QuizAnswer answer = quizAnswerRepository
                     .findByCourseIdAndAttemptIdAndQuestionId(courseId, attemptId, answerRequest.getQuestionId())
                     .orElseGet(() -> QuizAnswer.builder()
@@ -196,11 +162,14 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
                             .build());
 
             answer.setSelectedOptionId(answerRequest.getSelectedOptionId());
+            // correct / earnedPoints are intentionally left untouched here -
+            // grading happens exactly once, at submit time, not per-save.
             quizAnswerRepository.save(answer);
         }
     }
 
     @Transactional
+    @Override
     public QuizAttemptResultDto submitAttempt(UUID attemptId) {
         User student = tenantGuard.requireAuthenticatedUser();
         UUID courseId = student.getCourseId();
@@ -217,6 +186,9 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
         LocalDateTime now = LocalDateTime.now();
         boolean expired = now.isAfter(attempt.getExpiresAt());
 
+        // Per doc 12.7: if submitted after expiresAt, we still grade what was
+        // saved so far, but record it as AUTO_SUBMITTED rather than SUBMITTED,
+        // so the distinction between "on time" and "late" is preserved.
         QuizAttemptStatus finalStatus = expired ? QuizAttemptStatus.AUTO_SUBMITTED : QuizAttemptStatus.SUBMITTED;
 
         quizGradingService.grade(attempt, questions, finalStatus, now);
@@ -226,16 +198,21 @@ public class QuizAttemptServiceImpl implements QuizAttemptService{
     }
 
     @Transactional(readOnly = true)
+    @Override
     public QuizAttemptResultDto getResult(UUID attemptId) {
         User student = tenantGuard.requireAuthenticatedUser();
         QuizAttempt attempt = requireOwnAttempt(student.getCourseId(), student.getId(), attemptId);
         return toResultDto(attempt);
     }
 
+    // ---- helpers ----
+
     private QuizAttempt requireOwnAttempt(UUID courseId, UUID studentId, UUID attemptId) {
         QuizAttempt attempt = quizAttemptRepository.findByCourseIdAndId(courseId, attemptId)
                 .orElseThrow(() -> new QuizAttemptNotFoundException(attemptId));
 
+        // Student can access only own attempt (doc 8.14 rule) - not just any
+        // attempt within the tenant.
         if (!attempt.getStudentId().equals(studentId)) {
             throw new QuizAttemptNotFoundException(attemptId);
         }

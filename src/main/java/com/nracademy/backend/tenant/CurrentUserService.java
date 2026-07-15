@@ -1,6 +1,6 @@
 package com.nracademy.backend.tenant;
 
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.exception.common.UnauthenticatedException;
 import com.nracademy.backend.repository.UserRepository;
 import com.nracademy.backend.entity.enums.StatusCode;
@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

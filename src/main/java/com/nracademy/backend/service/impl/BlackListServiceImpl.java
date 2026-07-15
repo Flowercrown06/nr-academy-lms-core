@@ -1,7 +1,7 @@
 package com.nracademy.backend.service.impl;
 
-import com.nracademy.backend.entity.BlackListedToken;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.auth.BlackListedToken;
+import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.entity.enums.BlacklistReason;
 import com.nracademy.backend.repository.BlackListedTokenRepository;
 import com.nracademy.backend.service.UserService;

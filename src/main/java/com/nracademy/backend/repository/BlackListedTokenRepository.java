@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.nracademy.backend.entity.BlackListedToken;
+import com.nracademy.backend.entity.auth.BlackListedToken;
 
 public interface BlackListedTokenRepository extends JpaRepository<BlackListedToken, UUID> {
     boolean existsByToken(String token);

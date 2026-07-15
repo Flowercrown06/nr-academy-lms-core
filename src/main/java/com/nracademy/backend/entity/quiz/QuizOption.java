@@ -1,6 +1,6 @@
 package com.nracademy.backend.entity.quiz;
 
-import com.nracademy.backend.entity.Course;
+import com.nracademy.backend.entity.course.Course;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

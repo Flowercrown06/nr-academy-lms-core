@@ -1,9 +1,9 @@
 package com.nracademy.backend.tenant;
 
-import com.nracademy.backend.entity.Course;
+import com.nracademy.backend.entity.course.Course;
 import com.nracademy.backend.entity.enums.CourseStatus;
 import com.nracademy.backend.entity.enums.Role;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.user.User;
 import com.nracademy.backend.exception.common.RoleForbiddenException;
 import com.nracademy.backend.exception.common.TenantAccessDeniedException;
 import com.nracademy.backend.repository.CourseRepository;

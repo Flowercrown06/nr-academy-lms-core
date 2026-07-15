@@ -2,11 +2,11 @@ package com.nracademy.backend.dto.response;
 
 import com.nracademy.backend.entity.enums.Role;
 import com.nracademy.backend.entity.enums.UserStatus;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
@@ -14,18 +14,15 @@ import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserMeResponse {
     UUID id;
     UUID courseId;
     String name;
     String surname;
-    @Email
     String email;
-    @Pattern(
-            regexp = "^(\\+994|994|0)(50|51|55|70|77|99)\\d{7}$",
-            message = "Invalid Azerbaijani phone number"
-    )
     String phone;
     Role role;
     UserStatus status;
