@@ -1,11 +1,7 @@
 package com.nracademy.backend.controller;
 
-import com.nracademy.backend.dto.request.SaveQuizAnswersRequest;
-import com.nracademy.backend.dto.response.QuizAttemptResultDto;
-import com.nracademy.backend.dto.response.StartQuizAttemptResponse;
-import com.nracademy.backend.service.QuizAttemptService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import com.nracademy.backend.dto.request.SaveQuizAnswersRequest;
+import com.nracademy.backend.dto.response.QuizAttemptResultDto;
+import com.nracademy.backend.dto.response.StartQuizAttemptResponse;
+import com.nracademy.backend.service.QuizAttemptService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Student-facing quiz attempt endpoints.
@@ -50,7 +52,7 @@ public class StudentQuizController {
     public ResponseEntity<QuizAttemptResultDto> submitAttempt(@PathVariable UUID attemptId) {
         return ResponseEntity.ok(quizAttemptService.submitAttempt(attemptId));
     }
-
+    
     @GetMapping("/quiz-attempts/{attemptId}/result")
     public ResponseEntity<QuizAttemptResultDto> getResult(@PathVariable UUID attemptId) {
         return ResponseEntity.ok(quizAttemptService.getResult(attemptId));

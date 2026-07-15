@@ -1,5 +1,12 @@
 package com.nracademy.backend.service.impl;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.nracademy.backend.dto.request.CreateQuestionRequest;
 import com.nracademy.backend.dto.request.CreateQuizRequest;
 import com.nracademy.backend.dto.request.QuestionOptionRequest;
@@ -14,9 +21,9 @@ import com.nracademy.backend.entity.quiz.Quiz;
 import com.nracademy.backend.entity.quiz.QuizOption;
 import com.nracademy.backend.entity.quiz.QuizQuestion;
 import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.exception.common.QuizNotFoundException;
 import com.nracademy.backend.exception.common.QuizQuestionHasNoCorrectOptionException;
 import com.nracademy.backend.exception.common.QuizQuestionNotFoundException;
-import com.nracademy.backend.exception.common.QuizNotFoundException;
 import com.nracademy.backend.exception.common.QuizStatusTransitionInvalidException;
 import com.nracademy.backend.exception.common.RoleForbiddenException;
 import com.nracademy.backend.mapper.QuizMapper;
@@ -25,13 +32,8 @@ import com.nracademy.backend.repository.QuizQuestionRepository;
 import com.nracademy.backend.repository.QuizRepository;
 import com.nracademy.backend.service.QuizService;
 import com.nracademy.backend.tenant.TenantGuard;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Teacher / Course Owner side of quiz management: create quizzes, manage
@@ -167,6 +169,7 @@ public class QuizServiceImpl implements QuizService {
 
         List<QuizOption> options = request.getOptions().stream()
                 .map(optionReq -> QuizOption.builder()
+                        .courseId(question.getCourseId())
                         .questionId(savedQuestion.getId())
                         .optionText(optionReq.getOptionText())
                         .correct(optionReq.getCorrect())
