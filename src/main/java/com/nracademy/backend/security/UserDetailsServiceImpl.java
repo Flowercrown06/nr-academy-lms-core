@@ -3,7 +3,7 @@ package com.nracademy.backend.security;
 import com.nracademy.backend.dto.error.ErrorDetailDTO;
 import com.nracademy.backend.entity.enums.StatusCode;
 import com.nracademy.backend.entity.enums.UserStatus;
-import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.entity.User;
 import com.nracademy.backend.exception.common.UserEmailNotFoundException;
 import com.nracademy.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

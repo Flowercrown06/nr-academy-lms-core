@@ -1,6 +1,6 @@
 package com.nracademy.backend.specification;
 
-import com.nracademy.backend.entity.course.Course;
+import com.nracademy.backend.entity.Course;
 import com.nracademy.backend.entity.enums.CourseStatus;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

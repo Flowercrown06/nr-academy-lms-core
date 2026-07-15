@@ -1,6 +1,6 @@
 package com.nracademy.backend.repository;
 
-import com.nracademy.backend.entity.group.GroupStudent;
+import com.nracademy.backend.entity.GroupStudent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

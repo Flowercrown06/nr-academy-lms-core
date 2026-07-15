@@ -1,9 +1,7 @@
 package com.nracademy.backend.repository;
 
 import com.nracademy.backend.entity.enums.LessonStatus;
-import com.nracademy.backend.entity.lesson.Lesson;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.nracademy.backend.entity.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

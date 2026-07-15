@@ -1,12 +1,7 @@
-package com.nracademy.backend.entity.quiz;
+package com.nracademy.backend.entity;
 
-import com.nracademy.backend.entity.Course;
-import com.nracademy.backend.entity.enums.QuizAttemptStatus;
-import com.nracademy.backend.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,7 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -26,10 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,16 +32,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
-        name = "quiz_attempts",
+        name = "group_students",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_quiz_attempts_course_quiz_student_attempt",
-                columnNames = {"course_id", "quiz_id", "student_id", "attempt_no"}
+                name = "uk_group_students_course_group_student",
+                columnNames = {"course_id", "group_id", "student_id"}
         ),
-        indexes = {
-                @Index(name = "idx_quiz_attempts_course_status_expires", columnList = "course_id, status, expires_at")
-        }
+        indexes = @Index(name = "idx_group_students_course_student", columnList = "course_id, student_id")
 )
-public class QuizAttempt {
+public class GroupStudent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -63,12 +52,12 @@ public class QuizAttempt {
     @JoinColumn(name = "course_id", insertable = false, updatable = false)
     Course course;
 
-    @Column(name = "quiz_id", nullable = false)
-    UUID quizId;
+    @Column(name = "group_id", nullable = false)
+    UUID groupId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "quiz_id", insertable = false, updatable = false)
-    Quiz quiz;
+    @JoinColumn(name = "group_id", insertable = false, updatable = false)
+    Group group;
 
     @Column(name = "student_id", nullable = false)
     UUID studentId;
@@ -77,47 +66,24 @@ public class QuizAttempt {
     @JoinColumn(name = "student_id", insertable = false, updatable = false)
     User student;
 
-    @Column(name = "attempt_no", nullable = false)
-    Integer attemptNo;
+    @Column(name = "joined_at", nullable = false, updatable = false)
+    Instant joinedAt;
 
     @Builder.Default
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    QuizAttemptStatus status = QuizAttemptStatus.IN_PROGRESS;
-
-    @Column(name = "started_at", nullable = false)
-    LocalDateTime startedAt;
-
-    @Column(name = "expires_at", nullable = false)
-    LocalDateTime expiresAt;
-
-    @Column(name = "submitted_at")
-    LocalDateTime submittedAt;
-
-    @Column(precision = 8, scale = 2)
-    BigDecimal score;
-
-    @Column(name = "correct_count")
-    Integer correctCount;
-
-    @Column(name = "total_questions")
-    Integer totalQuestions;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "attempt")
-    List<QuizAnswer> answers = new ArrayList<>();
+    Boolean active = true;
 
     @PrePersist
     void prePersist() {
-        if (status == null) {
-            status = QuizAttemptStatus.IN_PROGRESS;
+        if (joinedAt == null) {
+            joinedAt = Instant.now();
         }
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof QuizAttempt other)) return false;
+        if (!(o instanceof GroupStudent other)) return false;
         return id != null && id.equals(other.id);
     }
 

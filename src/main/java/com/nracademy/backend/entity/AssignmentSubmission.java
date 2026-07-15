@@ -1,8 +1,7 @@
-package com.nracademy.backend.entity.quiz;
+package com.nracademy.backend.entity;
 
-import com.nracademy.backend.entity.Course;
-import com.nracademy.backend.entity.enums.QuizAttemptStatus;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.enums.SubmissionStatus;
+import com.nracademy.backend.entity.enums.SubmissionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,11 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +25,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,16 +37,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
-        name = "quiz_attempts",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_quiz_attempts_course_quiz_student_attempt",
-                columnNames = {"course_id", "quiz_id", "student_id", "attempt_no"}
-        ),
+        name = "assignment_submissions",
         indexes = {
-                @Index(name = "idx_quiz_attempts_course_status_expires", columnList = "course_id, status, expires_at")
+                @Index(name = "idx_submissions_course_assignment_student", columnList = "course_id, assignment_id, student_id"),
+                @Index(name = "idx_submissions_course_student_status", columnList = "course_id, student_id, status")
         }
 )
-public class QuizAttempt {
+public class AssignmentSubmission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -63,12 +56,12 @@ public class QuizAttempt {
     @JoinColumn(name = "course_id", insertable = false, updatable = false)
     Course course;
 
-    @Column(name = "quiz_id", nullable = false)
-    UUID quizId;
+    @Column(name = "assignment_id", nullable = false)
+    UUID assignmentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "quiz_id", insertable = false, updatable = false)
-    Quiz quiz;
+    @JoinColumn(name = "assignment_id", insertable = false, updatable = false)
+    Assignment assignment;
 
     @Column(name = "student_id", nullable = false)
     UUID studentId;
@@ -77,47 +70,52 @@ public class QuizAttempt {
     @JoinColumn(name = "student_id", insertable = false, updatable = false)
     User student;
 
-    @Column(name = "attempt_no", nullable = false)
-    Integer attemptNo;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "submission_type", nullable = false)
+    SubmissionType submissionType;
+
+    @Column(name = "file_url")
+    String fileUrl;
+
+    @Column(name = "file_key")
+    String fileKey;
+
+    @Lob
+    @Column(name = "text_answer", columnDefinition = "TEXT")
+    String textAnswer;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    QuizAttemptStatus status = QuizAttemptStatus.IN_PROGRESS;
+    SubmissionStatus status = SubmissionStatus.SUBMITTED;
 
-    @Column(name = "started_at", nullable = false)
-    LocalDateTime startedAt;
+    @Column(precision = 5, scale = 2)
+    BigDecimal grade;
 
-    @Column(name = "expires_at", nullable = false)
-    LocalDateTime expiresAt;
+    @Lob
+    @Column(name = "teacher_comment", columnDefinition = "TEXT")
+    String teacherComment;
 
-    @Column(name = "submitted_at")
-    LocalDateTime submittedAt;
+    @Column(name = "reviewed_by")
+    UUID reviewedBy;
 
-    @Column(precision = 8, scale = 2)
-    BigDecimal score;
+    @Column(name = "submitted_at", nullable = false, updatable = false)
+    Instant submittedAt;
 
-    @Column(name = "correct_count")
-    Integer correctCount;
-
-    @Column(name = "total_questions")
-    Integer totalQuestions;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "attempt")
-    List<QuizAnswer> answers = new ArrayList<>();
+    @Column(name = "reviewed_at")
+    Instant reviewedAt;
 
     @PrePersist
     void prePersist() {
-        if (status == null) {
-            status = QuizAttemptStatus.IN_PROGRESS;
+        if (submittedAt == null) {
+            submittedAt = Instant.now();
         }
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof QuizAttempt other)) return false;
+        if (!(o instanceof AssignmentSubmission other)) return false;
         return id != null && id.equals(other.id);
     }
 

@@ -1,6 +1,6 @@
 package com.nracademy.backend.repository;
 
-import com.nracademy.backend.entity.assignment.AssignmentSubmission;
+import com.nracademy.backend.entity.AssignmentSubmission;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

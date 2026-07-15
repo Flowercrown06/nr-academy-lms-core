@@ -2,18 +2,26 @@ package com.nracademy.backend.service;
 
 import com.nracademy.backend.dto.request.SaveQuizAnswersRequest;
 import com.nracademy.backend.dto.response.QuizAttemptResultDto;
+import com.nracademy.backend.dto.response.QuizDto;
 import com.nracademy.backend.dto.response.StartQuizAttemptResponse;
+import com.nracademy.backend.entity.enums.QuizStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Student-facing quiz attempt lifecycle: start, save answers, submit, view result.
- *
- * Every method here is scoped to (courseId, current student) - a student
- * can only ever see or act on their OWN attempts, never another student's,
- * and never outside their tenant.
- */
 public interface QuizAttemptService {
+
+    Page<QuizDto> listAssignedQuizzes(
+            QuizStatus status,
+            String q,
+            LocalDateTime availableFrom,
+            LocalDateTime availableTo,
+            Boolean attempted,
+            Pageable pageable
+    );
+
     StartQuizAttemptResponse startAttempt(UUID quizId);
 
     void saveAnswers(UUID attemptId, SaveQuizAnswersRequest request);

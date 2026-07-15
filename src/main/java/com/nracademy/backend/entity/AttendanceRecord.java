@@ -1,13 +1,7 @@
-package com.nracademy.backend.entity.quiz;
+package com.nracademy.backend.entity;
 
-import com.nracademy.backend.entity.Course;
-import com.nracademy.backend.entity.enums.QuizStatus;
-import com.nracademy.backend.entity.Group;
-import com.nracademy.backend.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +22,6 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,10 +33,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
-        name = "quizzes",
-        indexes = @Index(name = "idx_quizzes_course_group_status", columnList = "course_id, group_id, status")
+        name = "attendance_records",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_attendance_course_lesson_student",
+                columnNames = {"course_id", "lesson_id", "student_id"}
+        ),
+        indexes = @Index(name = "idx_attendance_course_student", columnList = "course_id, student_id")
 )
-public class Quiz {
+public class AttendanceRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -58,52 +53,37 @@ public class Quiz {
     @JoinColumn(name = "course_id", insertable = false, updatable = false)
     Course course;
 
-    @Column(name = "group_id", nullable = false)
-    UUID groupId;
+    @Column(name = "lesson_id", nullable = false)
+    UUID lessonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "group_id", insertable = false, updatable = false)
-    Group group;
+    @JoinColumn(name = "lesson_id", insertable = false, updatable = false)
+    Lesson lesson;
 
-    @Column(name = "teacher_id", nullable = false)
-    UUID teacherId;
+    @Column(name = "student_id", nullable = false)
+    UUID studentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "teacher_id", insertable = false, updatable = false)
-    User teacher;
+    @JoinColumn(name = "student_id", insertable = false, updatable = false)
+    User student;
 
     @Column(nullable = false)
-    String title;
+    Boolean present;
 
-    @Column(name = "duration_minutes", nullable = false)
-    Integer durationMinutes;
+    @Column(name = "recorded_by", nullable = false)
+    UUID recordedBy;
 
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    QuizStatus status = QuizStatus.DRAFT;
+    @Column(name = "recorded_at", nullable = false, updatable = false)
+    Instant recordedAt;
 
-    @Column(name = "available_from")
-    LocalDateTime availableFrom;
-
-    @Column(name = "available_until")
-    LocalDateTime availableUntil;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     Instant updatedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "quiz")
-    List<QuizQuestion> questions = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
-        createdAt = now;
-        updatedAt = now;
+        if (recordedAt == null) {
+            recordedAt = Instant.now();
+        }
     }
 
     @PreUpdate
@@ -114,7 +94,7 @@ public class Quiz {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Quiz other)) return false;
+        if (!(o instanceof AttendanceRecord other)) return false;
         return id != null && id.equals(other.id);
     }
 

@@ -13,7 +13,7 @@ import com.nracademy.backend.entity.enums.Role;
 import com.nracademy.backend.entity.quiz.Quiz;
 import com.nracademy.backend.entity.quiz.QuizOption;
 import com.nracademy.backend.entity.quiz.QuizQuestion;
-import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.entity.User;
 import com.nracademy.backend.exception.common.QuizQuestionHasNoCorrectOptionException;
 import com.nracademy.backend.exception.common.QuizQuestionNotFoundException;
 import com.nracademy.backend.exception.common.QuizNotFoundException;
@@ -54,7 +54,6 @@ public class QuizService {
             QuizStatus.PUBLISHED, Set.of(QuizStatus.CLOSED),
             QuizStatus.CLOSED, Set.of()
     );
-
     @Transactional
     public QuizDto createQuiz(CreateQuizRequest request) {
         User user = requireQuizManager();
@@ -173,6 +172,7 @@ public class QuizService {
         validateHasCorrectOption(request.getOptions());
 
         QuizQuestion question = QuizQuestion.builder()
+                .courseId(quiz.getCourseId())
                 .courseId(quiz.getCourseId())
                 .quizId(quiz.getId())
                 .questionText(request.getQuestionText())

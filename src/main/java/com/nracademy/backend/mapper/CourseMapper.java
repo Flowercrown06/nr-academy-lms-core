@@ -1,7 +1,7 @@
 package com.nracademy.backend.mapper;
 
 import com.nracademy.backend.dto.response.CourseDto;
-import com.nracademy.backend.entity.course.Course;
+import com.nracademy.backend.entity.Course;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

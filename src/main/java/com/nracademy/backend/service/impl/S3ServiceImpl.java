@@ -73,12 +73,7 @@ public class S3ServiceImpl implements S3Service {
         return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
     }
 
-    public UploadResponse uploadSettingImageFile(MultipartFile file) {
-        validateFileEmpty(file);
-        validateImageFile(file);
-        validateMaxFileSize(file, maxImageFileSize);
-        return upload(file, settingImagePrefix);
-    }
+
 
     public UploadResponse uploadCarImageFile(MultipartFile file) {
         validateFileEmpty(file);

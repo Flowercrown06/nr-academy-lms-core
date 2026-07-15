@@ -1,7 +1,7 @@
 package com.nracademy.backend.repository;
 
 import com.nracademy.backend.entity.enums.MediaOwnerType;
-import com.nracademy.backend.entity.media.MediaAsset;
+import com.nracademy.backend.entity.MediaAsset;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

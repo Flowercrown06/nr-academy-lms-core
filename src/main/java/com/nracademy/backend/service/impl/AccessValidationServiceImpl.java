@@ -1,9 +1,9 @@
 package com.nracademy.backend.service.impl;
 
-import com.nracademy.backend.entity.course.Course;
+import com.nracademy.backend.entity.Course;
 import com.nracademy.backend.entity.enums.CourseStatus;
 import com.nracademy.backend.entity.enums.UserStatus;
-import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.entity.User;
 import com.nracademy.backend.exception.common.CourseBlockedException;
 import com.nracademy.backend.exception.common.CourseInactiveException;
 import com.nracademy.backend.exception.common.UserBlockedException;

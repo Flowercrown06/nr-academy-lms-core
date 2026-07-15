@@ -1,9 +1,6 @@
-package com.nracademy.backend.entity.quiz;
+package com.nracademy.backend.entity;
 
-import com.nracademy.backend.entity.Course;
-import com.nracademy.backend.entity.enums.QuizStatus;
-import com.nracademy.backend.entity.Group;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.enums.AssignmentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,8 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -29,8 +26,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,10 +37,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
-        name = "quizzes",
-        indexes = @Index(name = "idx_quizzes_course_group_status", columnList = "course_id, group_id, status")
+        name = "assignments",
+        indexes = @Index(name = "idx_assignments_course_group_status", columnList = "course_id, group_id, status")
 )
-public class Quiz {
+public class Assignment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -75,29 +70,23 @@ public class Quiz {
     @Column(nullable = false)
     String title;
 
-    @Column(name = "duration_minutes", nullable = false)
-    Integer durationMinutes;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    String description;
+
+    @Column(name = "due_at")
+    LocalDateTime dueAt;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    QuizStatus status = QuizStatus.DRAFT;
-
-    @Column(name = "available_from")
-    LocalDateTime availableFrom;
-
-    @Column(name = "available_until")
-    LocalDateTime availableUntil;
+    AssignmentStatus status = AssignmentStatus.DRAFT;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
     Instant updatedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "quiz")
-    List<QuizQuestion> questions = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
@@ -114,7 +103,7 @@ public class Quiz {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Quiz other)) return false;
+        if (!(o instanceof Assignment other)) return false;
         return id != null && id.equals(other.id);
     }
 

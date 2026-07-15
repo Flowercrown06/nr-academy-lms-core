@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -29,6 +29,6 @@ public class CourseDto {
     CourseStatus status;
     BigDecimal commissionRate;
     BigDecimal paymentPerStudent;
-    Instant createdAt;
-    Instant updatedAt;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
 }

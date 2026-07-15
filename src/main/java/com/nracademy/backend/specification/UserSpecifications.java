@@ -2,7 +2,7 @@ package com.nracademy.backend.specification;
 
 import com.nracademy.backend.entity.enums.Role;
 import com.nracademy.backend.entity.enums.UserStatus;
-import com.nracademy.backend.entity.user.User;
+import com.nracademy.backend.entity.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 

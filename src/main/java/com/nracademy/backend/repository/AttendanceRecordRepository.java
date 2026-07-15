@@ -1,6 +1,6 @@
 package com.nracademy.backend.repository;
 
-import com.nracademy.backend.entity.attendance.AttendanceRecord;
+import com.nracademy.backend.entity.AttendanceRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

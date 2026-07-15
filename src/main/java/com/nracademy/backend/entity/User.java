@@ -1,9 +1,7 @@
-package com.nracademy.backend.entity.quiz;
+package com.nracademy.backend.entity;
 
-import com.nracademy.backend.entity.Course;
-import com.nracademy.backend.entity.enums.QuizStatus;
-import com.nracademy.backend.entity.Group;
-import com.nracademy.backend.entity.User;
+import com.nracademy.backend.entity.enums.Role;
+import com.nracademy.backend.entity.enums.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -27,10 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,84 +36,87 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
-        name = "quizzes",
-        indexes = @Index(name = "idx_quizzes_course_group_status", columnList = "course_id, group_id, status")
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email", unique = true),
+                @Index(name = "idx_users_course_role", columnList = "course_id, role"),
+                @Index(name = "idx_users_course_status", columnList = "course_id, status")
+        }
 )
-public class Quiz {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @Column(name = "course_id", nullable = false)
+    @Column(name = "course_id")
     UUID courseId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", insertable = false, updatable = false)
     Course course;
 
-    @Column(name = "group_id", nullable = false)
-    UUID groupId;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "group_id", insertable = false, updatable = false)
-    Group group;
-
-    @Column(name = "teacher_id", nullable = false)
-    UUID teacherId;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "teacher_id", insertable = false, updatable = false)
-    User teacher;
+    @Column(nullable = false)
+    String name;
 
     @Column(nullable = false)
-    String title;
+    String surname;
 
-    @Column(name = "duration_minutes", nullable = false)
-    Integer durationMinutes;
+    @Column(nullable = false, unique = true)
+    String email;
+
+    String phone;
+
+    @Column(name = "password_hash", nullable = false)
+    String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    Role role;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    QuizStatus status = QuizStatus.DRAFT;
+    UserStatus status = UserStatus.ACTIVE;
 
-    @Column(name = "available_from")
-    LocalDateTime availableFrom;
-
-    @Column(name = "available_until")
-    LocalDateTime availableUntil;
+    @Column(name = "last_login_at")
+    LocalDateTime lastLoginAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt;
+    LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "quiz")
-    List<QuizQuestion> questions = new ArrayList<>();
+    LocalDateTime updatedAt;
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Quiz other)) return false;
+        if (!(o instanceof User other)) return false;
         return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void updateLastLogin() {
+        lastLoginAt = LocalDateTime.now();
+    }
+
+    public boolean isActive() {
+        return status == UserStatus.ACTIVE;
     }
 }
